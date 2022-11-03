@@ -206,7 +206,7 @@ resource "aws_ecs_task_definition" "traefik" {
   container_definitions = jsonencode([
     {
       name       = "traefik"
-      image      = "traefik:v2.8"
+      image      = "traefik:${var.traefik_version}"
       entryPoint = ["traefik", "--providers.ecs.clusters", "${var.ecs_cluster}", "--log.level", "DEBUG", "--providers.ecs.region", "${data.aws_region.current.name}"]
       essential  = true
       logConfiguration = {
