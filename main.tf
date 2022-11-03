@@ -1,7 +1,7 @@
 # Get the current aws region
 data "aws_region" "current" {}
 
-# Gather Data About the VPC
+# Gather Data About the VPC subnets, clusters and other resources
 data "aws_vpcs" "vpc" {
   tags = {
     Name = var.name
@@ -18,6 +18,13 @@ data "aws_lb" "nlb" {
 
 data "aws_vpc" "vpc" {
   id = data.aws_vpcs.vpc.ids[0]
+}
+
+data "aws_subnets" "private" {
+  filter {
+    name   = "tag:Name"
+    values = ["${var.ecs_cluster}-private-*"]
+  }
 }
 
 data "aws_acm_certificate" "default_acm" {
@@ -251,7 +258,7 @@ resource "aws_ecs_service" "traefik" {
   }
 
   network_configuration {
-    subnets         = var.private_subnets
+    subnets         = toset(data.aws_subnets.private.ids)
     security_groups = [aws_security_group.traefik_ecs.id]
   }
 }
