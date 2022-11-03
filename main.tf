@@ -17,9 +17,7 @@ data "aws_lb" "nlb" {
 }
 
 data "aws_vpc" "vpc" {
-  id              = data.aws_vpcs.vpc.ids[0]
-  cidr_block      = data.aws_vpcs.vpc.ids[0].cidr_block
-  ipv6_cidr_block = data.aws_vpcs.vpc.ids[0].ipv6_cidr_block
+  id = data.aws_vpcs.vpc.ids[0]
 }
 
 data "aws_acm_certificate" "default_acm" {
