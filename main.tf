@@ -212,7 +212,7 @@ resource "aws_ecs_task_definition" "traefik" {
     {
       name       = "traefik"
       image      = "traefik:${var.traefik_version}"
-      entryPoint = ["traefik", "--providers.ecs.clusters", "${var.ecs_cluster}", "--log.level", "DEBUG", "--providers.ecs.region", "${data.aws_region.current.name}"]
+      entryPoint = ["traefik", "--providers.ecs.clusters", "${var.ecs_cluster}", "--log.level", "${var.traefik_log_level}", "--providers.ecs.region", "${data.aws_region.current.name}"]
       essential  = true
       logConfiguration = {
         logDriver = "awslogs"
