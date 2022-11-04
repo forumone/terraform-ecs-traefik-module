@@ -232,7 +232,7 @@ resource "aws_ecs_task_definition" "traefik" {
 # Create ECS Service 
 resource "aws_ecs_service" "traefik" {
   name            = "${var.ecs_cluster_name}-traefik"
-  cluster         = var.ecs_cluster
+  cluster         = var.ecs_cluster_name
   task_definition = aws_ecs_task_definition.traefik.arn
   desired_count   = 1
   launch_type     = "FARGATE"
