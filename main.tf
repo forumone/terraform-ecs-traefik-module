@@ -1,34 +1,23 @@
 # Get the current aws region
 data "aws_region" "current" {}
 
-# Gather Data About the VPC subnets, clusters and other resources
-data "aws_vpcs" "vpc" {
-  tags = {
-    Name = var.name
-  }
-}
-
-data "aws_ecs_cluster" "ecs" {
-  cluster_name = var.ecs_cluster
-}
-
-data "aws_lb" "nlb" {
-  name = var.name
-}
-
+# Gather Data About the VPC subnets
 data "aws_vpc" "vpc" {
-  id = data.aws_vpcs.vpc.ids[0]
+  id = var.vpc_id
 }
 
 data "aws_subnets" "private" {
   filter {
     name   = "tag:Name"
-    values = ["${var.ecs_cluster}-private-*"]
+    values = ["${data.aws_vpc.vpc.name}-private-*"]
   }
 }
 
-data "aws_acm_certificate" "default_acm" {
-  domain = "${var.name}.${var.suffix}"
+data "aws_subnets" "public" {
+  filter {
+    name   = "tag:Name"
+    values = ["${data.aws_vpc.vpc.name}-public-*"]
+  }
 }
 
 # Create Cloudwatch Log group
@@ -106,7 +95,7 @@ resource "aws_iam_role_policy_attachment" "ecs_policy_secrets" {
 resource "aws_security_group" "traefik_ecs" {
   name        = "traefik_ecs"
   description = "Security group for the Traefik reverse proxy"
-  vpc_id      = data.aws_vpc.vpc.id
+  vpc_id      = var.vpc_id
 
   tags = {
     Name = "${var.ecs_cluster}-treafik"
@@ -131,8 +120,8 @@ resource "aws_security_group_rule" "public_traefik_http_ingress" {
   protocol          = "tcp"
   from_port         = var.http_port
   to_port           = var.http_port
-  cidr_blocks       = [data.aws_vpc.vpc.cidr_block]
-  ipv6_cidr_blocks  = [data.aws_vpc.vpc.ipv6_cidr_block]
+  cidr_blocks       = [var.public_subnets_ipv4]
+  ipv6_cidr_blocks  = [var.public_subnets_ipv6]
 }
 
 resource "aws_security_group_rule" "public_traefik_https_ingress" {
@@ -142,8 +131,8 @@ resource "aws_security_group_rule" "public_traefik_https_ingress" {
   protocol          = "tcp"
   from_port         = var.https_port
   to_port           = var.https_port
-  cidr_blocks       = [data.aws_vpc.vpc.cidr_block]
-  ipv6_cidr_blocks  = [data.aws_vpc.vpc.ipv6_cidr_block]
+  cidr_blocks       = [var.public_subnets_ipv4]
+  ipv6_cidr_blocks  = [var.public_subnets_ipv6]
 }
 
 
@@ -152,7 +141,7 @@ resource "aws_lb_target_group" "traefik_http" {
   name        = "traefik-http"
   port        = var.http_port
   protocol    = "TCP"
-  vpc_id      = data.aws_vpc.vpc.id
+  vpc_id      = var.vpc_id
   target_type = "ip"
   health_check {
     enabled  = true
@@ -166,7 +155,7 @@ resource "aws_lb_target_group" "traefik_https" {
   name        = "traefik-https"
   port        = var.https_port
   protocol    = "TCP"
-  vpc_id      = data.aws_vpc.vpc.id
+  vpc_id      = var.vpc_id
   target_type = "ip"
   health_check {
     enabled  = true
@@ -178,7 +167,7 @@ resource "aws_lb_target_group" "traefik_https" {
 
 # Create Network Load Balanacer Target Listeners
 resource "aws_lb_listener" "traefik_http" {
-  load_balancer_arn = data.aws_lb.nlb.id
+  load_balancer_arn = var.nlb_id
   port              = "80"
   protocol          = "TCP"
 
@@ -189,10 +178,10 @@ resource "aws_lb_listener" "traefik_http" {
 }
 
 resource "aws_lb_listener" "traefik_https" {
-  load_balancer_arn = data.aws_lb.nlb.id
+  load_balancer_arn = var.nlb_id
   port              = "443"
   protocol          = "TLS"
-  certificate_arn   = data.aws_acm_certificate.default_acm.arn
+  certificate_arn   = var.default_acm
   default_action {
     target_group_arn = aws_lb_target_group.traefik_https.id
     type             = "forward"
@@ -239,7 +228,7 @@ resource "aws_ecs_task_definition" "traefik" {
 # Create ECS Service 
 resource "aws_ecs_service" "traefik" {
   name            = "${var.ecs_cluster}-traefik"
-  cluster         = data.aws_ecs_cluster.ecs.id
+  cluster         = var.ecs_cluster_id
   task_definition = aws_ecs_task_definition.traefik.arn
   desired_count   = 1
   launch_type     = "FARGATE"
