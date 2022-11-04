@@ -1,8 +1,11 @@
-module "trafik" {
-  source      = "github.com/forumone/terraform-ecs-traefik-module"
-  version     = "~> 0.1"
-  name        = "ecs-cluster"
-  ecs_cluster = "ecs-cluster"
-  suffix      = "demo.com"
-
+module "traefik" {
+  source              = "github.com/forumone/terraform-ecs-traefik-module?ref=v0.2.0"
+  name                = local.name
+  suffix              = local.workspace["suffix"]
+  vpc_id              = module.vpc.vpc_id
+  public_subnets_ipv4 = module.vpc.public_subnets_cidr_blocks
+  public_subnets_ipv6 = module.vpc.public_subnets_ipv6_cidr_blocks
+  nlb_id              = module.nlb.nlb_id
+  ecs_cluster_id      = module.ecs_cluster_id
+  default_acm         = module.acm.default.arn
 }
