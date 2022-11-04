@@ -1,28 +1,32 @@
 # Get the current aws region
 data "aws_region" "current" {}
 
-# Gather Data About the VPC subnets
-data "aws_vpc" "vpc" {
-  id = var.vpc_id
-}
-
+# Get the Public and Private VPC subnets
 data "aws_subnets" "private" {
   filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
+  }
+  filter {
     name   = "tag:Name"
-    values = ["${data.aws_vpc.vpc.name}-private-*"]
+    values = ["*-private-*"]
   }
 }
 
 data "aws_subnets" "public" {
   filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
+  }
+  filter {
     name   = "tag:Name"
-    values = ["${data.aws_vpc.vpc.name}-public-*"]
+    values = ["*-public-*"]
   }
 }
 
 # Create Cloudwatch Log group
 resource "aws_cloudwatch_log_group" "traefik" {
-  name              = "${var.ecs_cluster}/traefik/"
+  name              = "${var.ecs_cluster_name}/traefik/"
   retention_in_days = 14
 }
 
@@ -62,21 +66,21 @@ data "aws_iam_policy_document" "ecs_assume" {
 }
 
 resource "aws_iam_role" "traefik" {
-  name = "${var.ecs_cluster}-traefik-task_role"
+  name = "${var.ecs_cluster_name}-traefik-task_role"
 
   assume_role_policy = data.aws_iam_policy_document.ecs_assume.json
 }
 
 
 resource "aws_iam_role_policy" "traefik_policy" {
-  name = "${var.ecs_cluster}-traefik-policy"
+  name = "${var.ecs_cluster_name}-traefik-policy"
   role = aws_iam_role.traefik.id
 
   policy = data.aws_iam_policy_document.traefik_policy.json
 }
 
 resource "aws_iam_role" "ecs_role" {
-  name = "${var.ecs_cluster}-traefik-ecs-role"
+  name = "${var.ecs_cluster_name}-traefik-ecs-role"
 
   assume_role_policy = data.aws_iam_policy_document.ecs_assume.json
 }
@@ -98,7 +102,7 @@ resource "aws_security_group" "traefik_ecs" {
   vpc_id      = var.vpc_id
 
   tags = {
-    Name = "${var.ecs_cluster}-treafik"
+    Name = "${var.ecs_cluster_name}-treafik"
   }
 }
 
@@ -201,12 +205,12 @@ resource "aws_ecs_task_definition" "traefik" {
     {
       name       = "traefik"
       image      = "traefik:${var.traefik_version}"
-      entryPoint = ["traefik", "--providers.ecs.clusters", "${var.ecs_cluster}", "--log.level", "${var.traefik_log_level}", "--providers.ecs.region", "${data.aws_region.current.name}"]
+      entryPoint = ["traefik", "--providers.ecs.clusters", "${var.ecs_cluster_name}", "--log.level", "${var.traefik_log_level}", "--providers.ecs.region", "${data.aws_region.current.name}"]
       essential  = true
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          awslogs-group         = "${var.ecs_cluster}/traefik/"
+          awslogs-group         = "${var.ecs_cluster_name}/traefik/"
           awslogs-region        = "${data.aws_region.current.name}"
           awslogs-stream-prefix = "traefik"
         }
@@ -227,8 +231,8 @@ resource "aws_ecs_task_definition" "traefik" {
 
 # Create ECS Service 
 resource "aws_ecs_service" "traefik" {
-  name            = "${var.ecs_cluster}-traefik"
-  cluster         = var.ecs_cluster_id
+  name            = "${var.ecs_cluster_name}-traefik"
+  cluster         = var.ecs_cluster
   task_definition = aws_ecs_task_definition.traefik.arn
   desired_count   = 1
   launch_type     = "FARGATE"

@@ -6,6 +6,6 @@ module "traefik" {
   public_subnets_ipv4 = module.vpc.public_subnets_cidr_blocks
   public_subnets_ipv6 = module.vpc.public_subnets_ipv6_cidr_blocks
   nlb_id              = module.nlb.nlb_id
-  ecs_cluster_id      = module.ecs_cluster_id
+  ecs_cluster_name    = module.ecs_cluster_name
   default_acm         = module.acm.default.arn
 }
