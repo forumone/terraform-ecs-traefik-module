@@ -1,6 +1,29 @@
 # Get the current aws region
 data "aws_region" "current" {}
 
+# Get the Public and Private VPC subnets
+data "aws_subnets" "private" {
+  filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
+  }
+  filter {
+    name   = "tag:Name"
+    values = ["*-private-*"]
+  }
+}
+
+data "aws_subnets" "public" {
+  filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
+  }
+  filter {
+    name   = "tag:Name"
+    values = ["*-public-*"]
+  }
+}
+
 # Create Cloudwatch Log group
 resource "aws_cloudwatch_log_group" "traefik" {
   name              = "${var.ecs_cluster_name}/traefik/"
