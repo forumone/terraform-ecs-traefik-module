@@ -31,9 +31,25 @@ resource "aws_cloudwatch_log_group" "traefik" {
 }
 
 #Create IAM Roles and Policies
-resource "aws_iam_role" "traefik" {
-  name = "traefik_task_role"
+resource "aws_iam_role" "ecs_role" {
+  name = "ecs_role"
 
+  assume_role_policy = data.aws_iam_policy_document.ecs_assume.json
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+  role       = aws_iam_role.ecs_role.name
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_policy_secrets" {
+  policy_arn = "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
+  role       = aws_iam_role.ecs_role.name
+}
+
+resource "aws_iam_role" "traefik" {
+  name               = "traefik_task_role"
+  assume_role_policy = data.aws_iam_policy_document.ecs_assume.json
 }
 
 data "aws_iam_policy_document" "traefik_policy" {
@@ -165,6 +181,7 @@ resource "aws_lb_listener" "traefik_https" {
 resource "aws_ecs_task_definition" "traefik" {
   family                   = "traefik"
   task_role_arn            = aws_iam_role.traefik.arn
+  execution_role_arn       = aws_iam_role.ecs_role.arn
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
