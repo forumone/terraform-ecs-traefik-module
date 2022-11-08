@@ -31,6 +31,11 @@ resource "aws_cloudwatch_log_group" "traefik" {
 }
 
 #Create IAM Roles and Policies
+resource "aws_iam_role" "traefik" {
+  name = "traefik_task_role"
+
+}
+
 data "aws_iam_policy_document" "traefik_policy" {
   statement {
     sid = "main"
