@@ -31,27 +31,6 @@ resource "aws_cloudwatch_log_group" "traefik" {
 }
 
 #Create IAM Roles and Policies
-resource "aws_iam_role" "ecs_role" {
-  name = "ecs_role"
-
-  assume_role_policy = data.aws_iam_policy_document.ecs_assume.json
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_policy" {
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-  role       = aws_iam_role.ecs_role.name
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_policy_secrets" {
-  policy_arn = "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
-  role       = aws_iam_role.ecs_role.name
-}
-
-resource "aws_iam_role" "traefik" {
-  name               = "traefik_task_role"
-  assume_role_policy = data.aws_iam_policy_document.ecs_assume.json
-}
-
 data "aws_iam_policy_document" "traefik_policy" {
   statement {
     sid = "main"
@@ -82,7 +61,7 @@ resource "aws_iam_role_policy" "traefik_policy" {
 
 # Create Security groups
 resource "aws_security_group" "traefik_ecs" {
-  name        = "traefik_ecs"
+  name        = "${var.ecs_cluster_name}-traefik-ecs"
   description = "Security group for the Traefik reverse proxy"
   vpc_id      = var.vpc_id
 
@@ -127,7 +106,7 @@ resource "aws_security_group_rule" "public_traefik_https_ingress" {
 
 # Create Network Load Balanacer Target Groups
 resource "aws_lb_target_group" "traefik_http" {
-  name        = "traefik-http"
+  name        = "${var.ecs_cluster_name}-traefik-http"
   port        = var.http_port
   protocol    = "TCP"
   vpc_id      = var.vpc_id
@@ -141,7 +120,7 @@ resource "aws_lb_target_group" "traefik_http" {
 }
 
 resource "aws_lb_target_group" "traefik_https" {
-  name        = "traefik-https"
+  name        = "${var.ecs_cluster_name}-traefik-https"
   port        = var.https_port
   protocol    = "TCP"
   vpc_id      = var.vpc_id
@@ -180,15 +159,14 @@ resource "aws_lb_listener" "traefik_https" {
 # Create ECS Task Definition
 resource "aws_ecs_task_definition" "traefik" {
   family                   = "traefik"
-  task_role_arn            = aws_iam_role.traefik.arn
-  execution_role_arn       = aws_iam_role.ecs_role.arn
+  task_role_arn            = aws_iam_role.traefik_policy.arn
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
   requires_compatibilities = ["FARGATE"]
   container_definitions = jsonencode([
     {
-      name  = "traefik"
+      name  = "${var.ecs_cluster_name}-traefik"
       image = "traefik:${var.traefik_version}"
       entryPoint = [
         "traefik",
@@ -235,13 +213,13 @@ resource "aws_ecs_service" "traefik" {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.traefik_http.id
-    container_name   = "traefik"
+    container_name   = "${var.ecs_cluster_name}-traefik"
     container_port   = var.http_port
   }
 
   load_balancer {
     target_group_arn = aws_lb_target_group.traefik_https.id
-    container_name   = "traefik"
+    container_name   = "${var.ecs_cluster_name}-traefik"
     container_port   = var.https_port
   }
 
