@@ -200,6 +200,8 @@ resource "aws_ecs_task_definition" "traefik" {
         "${data.aws_region.current.name}",
         "--providers.ecs.exposedByDefault: false",
         "--entryPoints.web.address: ${var.http_port}",
+        "--entryPoints.web.http.redirections.entrypoint.to: websecure",
+        "--entryPoints.web.http.redirections.entrypoint.scheme: https",
         "--entryPoints.websecure.address: ${var.https_port}",
       ]
       essential = true
