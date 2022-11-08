@@ -31,6 +31,20 @@ resource "aws_cloudwatch_log_group" "traefik" {
 }
 
 #Create IAM Roles and Policies
+data "aws_iam_policy_document" "ecs_assume" {
+  version = "2012-10-17"
+
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+  }
+}
+
 data "aws_iam_policy_document" "traefik_policy" {
   statement {
     sid = "main"
@@ -52,11 +66,20 @@ data "aws_iam_policy_document" "traefik_policy" {
   }
 }
 
-resource "aws_iam_role_policy" "traefik_policy" {
-  name = "${var.ecs_cluster_name}-traefik-policy"
-  role = aws_iam_role.traefik.id
+resource "aws_iam_role" "traefik" {
+  name               = "${var.ecs_cluster_name}-traefik-task-role"
+  assume_role_policy = data.aws_iam_policy_document.ecs_assume.json
+}
 
+resource "aws_iam_role_policy" "traefik_policy" {
+  name   = "${var.ecs_cluster_name}-traefik-policy"
+  role   = aws_iam_role.traefik.id
   policy = data.aws_iam_policy_document.traefik_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+  role       = aws_iam_role.traefik.name
 }
 
 # Create Security groups
@@ -159,7 +182,7 @@ resource "aws_lb_listener" "traefik_https" {
 # Create ECS Task Definition
 resource "aws_ecs_task_definition" "traefik" {
   family                   = "traefik"
-  task_role_arn            = aws_iam_role.traefik_policy.arn
+  task_role_arn            = aws_iam_role.traefik.arn
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
