@@ -42,7 +42,8 @@ data "aws_iam_policy_document" "traefik_policy" {
       "ecs:DescribeTasks",
       "ecs:DescribeContainerInstances",
       "ecs:DescribeTaskDefinition",
-      "ec2:DescribeInstances"
+      "ec2:DescribeInstances",
+      "ssm:DescribeInstanceInformation"
     ]
 
     resources = [
@@ -51,48 +52,11 @@ data "aws_iam_policy_document" "traefik_policy" {
   }
 }
 
-data "aws_iam_policy_document" "ecs_assume" {
-  version = "2012-10-17"
-
-  statement {
-    effect  = "Allow"
-    actions = ["sts:AssumeRole"]
-
-    principals {
-      type        = "Service"
-      identifiers = ["ecs-tasks.amazonaws.com"]
-    }
-  }
-}
-
-resource "aws_iam_role" "traefik" {
-  name = "${var.ecs_cluster_name}-traefik-task_role"
-
-  assume_role_policy = data.aws_iam_policy_document.ecs_assume.json
-}
-
-
 resource "aws_iam_role_policy" "traefik_policy" {
   name = "${var.ecs_cluster_name}-traefik-policy"
   role = aws_iam_role.traefik.id
 
   policy = data.aws_iam_policy_document.traefik_policy.json
-}
-
-resource "aws_iam_role" "ecs_role" {
-  name = "${var.ecs_cluster_name}-traefik-ecs-role"
-
-  assume_role_policy = data.aws_iam_policy_document.ecs_assume.json
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_policy" {
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-  role       = aws_iam_role.ecs_role.name
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_policy_secrets" {
-  policy_arn = "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
-  role       = aws_iam_role.ecs_role.name
 }
 
 # Create Security groups
@@ -196,17 +160,26 @@ resource "aws_lb_listener" "traefik_https" {
 resource "aws_ecs_task_definition" "traefik" {
   family                   = "traefik"
   task_role_arn            = aws_iam_role.traefik.arn
-  execution_role_arn       = aws_iam_role.ecs_role.arn
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
   requires_compatibilities = ["FARGATE"]
   container_definitions = jsonencode([
     {
-      name       = "traefik"
-      image      = "traefik:${var.traefik_version}"
-      entryPoint = ["traefik", "--providers.ecs.clusters", "${var.ecs_cluster_name}", "--log.level", "${var.traefik_log_level}", "--providers.ecs.region", "${data.aws_region.current.name}"]
-      essential  = true
+      name  = "traefik"
+      image = "traefik:${var.traefik_version}"
+      entryPoint = [
+        "traefik",
+        "--providers.ecs.clusters",
+        "${var.ecs_cluster_name}",
+        "--log.level", "${var.traefik_log_level}",
+        "--providers.ecs.region",
+        "${data.aws_region.current.name}",
+        "--providers.ecs.exposedByDefault: false",
+        "--entryPoints.web.address: ${var.http_port}",
+        "--entryPoints.websecure.address: ${var.https_port}",
+      ]
+      essential = true
       logConfiguration = {
         logDriver = "awslogs"
         options = {
