@@ -131,15 +131,15 @@ resource "aws_security_group_rule" "public_traefik_https_ingress" {
   ipv6_cidr_blocks  = [var.public_subnets_ipv6]
 }
 
-resource "aws_security_group_rule" "public_traefik_http_engress" {
+resource "aws_security_group_rule" "public_traefik_http_egress" {
   description       = "Allows incoming HTTP traffic from private subnets"
   security_group_id = aws_security_group.traefik_ecs.id
   type              = "egress"
   protocol          = "tcp"
   from_port         = var.http_port
   to_port           = var.http_port
-  cidr_blocks       = [var.public_subnets_ipv4]
-  ipv6_cidr_blocks  = [var.public_subnets_ipv6]
+  cidr_blocks       = [var.private_subnets_ipv4]
+  ipv6_cidr_blocks  = [var.private_subnets_ipv6]
 }
 
 resource "aws_security_group_rule" "public_traefik_https_egress" {
@@ -149,8 +149,8 @@ resource "aws_security_group_rule" "public_traefik_https_egress" {
   protocol          = "tcp"
   from_port         = var.https_port
   to_port           = var.https_port
-  cidr_blocks       = [var.public_subnets_ipv4]
-  ipv6_cidr_blocks  = [var.public_subnets_ipv6]
+  cidr_blocks       = [var.private_subnets_ipv4]
+  ipv6_cidr_blocks  = [var.private_subnets_ipv6]
 }
 
 
@@ -185,7 +185,7 @@ resource "aws_lb_target_group" "traefik_https" {
 
 # Create Network Load Balanacer Target Listeners
 resource "aws_lb_listener" "traefik_http" {
-  load_balancer_arn = var.nlb_id
+  load_balancer_arn = var.nlb_arn
   port              = "80"
   protocol          = "TCP"
 
@@ -196,7 +196,7 @@ resource "aws_lb_listener" "traefik_http" {
 }
 
 resource "aws_lb_listener" "traefik_https" {
-  load_balancer_arn = var.nlb_id
+  load_balancer_arn = var.nlb_arn
   port              = "443"
   protocol          = "TLS"
   certificate_arn   = var.default_acm
