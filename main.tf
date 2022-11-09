@@ -131,6 +131,28 @@ resource "aws_security_group_rule" "public_traefik_https_ingress" {
   ipv6_cidr_blocks  = [var.public_subnets_ipv6]
 }
 
+resource "aws_security_group_rule" "public_traefik_http_engress" {
+  description       = "Allows incoming HTTP traffic from private subnets"
+  security_group_id = aws_security_group.traefik_ecs.id
+  type              = "egress"
+  protocol          = "tcp"
+  from_port         = var.http_port
+  to_port           = var.http_port
+  cidr_blocks       = [var.public_subnets_ipv4]
+  ipv6_cidr_blocks  = [var.public_subnets_ipv6]
+}
+
+resource "aws_security_group_rule" "public_traefik_https_egress" {
+  description       = "Allows incoming HTTPS traffic from private subnets"
+  security_group_id = aws_security_group.traefik_ecs.id
+  type              = "egress"
+  protocol          = "tcp"
+  from_port         = var.https_port
+  to_port           = var.https_port
+  cidr_blocks       = [var.public_subnets_ipv4]
+  ipv6_cidr_blocks  = [var.public_subnets_ipv6]
+}
+
 
 # Create Network Load Balanacer Target Groups
 resource "aws_lb_target_group" "traefik_http" {
