@@ -1,6 +1,6 @@
 variable "vpc_id" {}
 variable "nlb_arn" {}
-variable "default_acm" {}
+variable "default_acm_arn" {}
 variable "ecs_cluster_name" {}
 variable "http_port" { default = 80 }
 variable "https_port" { default = 443 }
