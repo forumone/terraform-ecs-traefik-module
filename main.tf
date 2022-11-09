@@ -13,17 +13,6 @@ data "aws_subnets" "private" {
   }
 }
 
-data "aws_subnets" "public" {
-  filter {
-    name   = "vpc-id"
-    values = [var.vpc_id]
-  }
-  filter {
-    name   = "tag:Name"
-    values = ["*-public-*"]
-  }
-}
-
 # Create Cloudwatch Log group
 resource "aws_cloudwatch_log_group" "traefik" {
   name              = "${var.ecs_cluster_name}/traefik/"
@@ -45,6 +34,7 @@ data "aws_iam_policy_document" "ecs_assume" {
   }
 }
 
+# Create IAM Policy
 data "aws_iam_policy_document" "traefik_policy" {
   statement {
     sid = "main"

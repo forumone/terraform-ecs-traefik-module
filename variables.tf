@@ -1,7 +1,5 @@
-variable "name" {}
 variable "vpc_id" {}
 variable "nlb_arn" {}
-variable "suffix" {}
 variable "default_acm" {}
 variable "ecs_cluster_name" {}
 variable "http_port" { default = 80 }
