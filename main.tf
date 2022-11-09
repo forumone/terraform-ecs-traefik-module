@@ -94,7 +94,7 @@ resource "aws_security_group" "traefik_ecs" {
   vpc_id      = var.vpc_id
 
   tags = {
-    Name = "${var.ecs_cluster_name}-treafik"
+    Name = "${var.ecs_cluster_name}-traefik"
   }
 }
 
