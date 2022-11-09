@@ -204,10 +204,10 @@ resource "aws_ecs_task_definition" "traefik" {
         "--log.level", "${var.traefik_log_level}",
         "--providers.ecs.region",
         "${data.aws_region.current.name}",
-        "--providers.ecs.exposedByDefault: false",
-        "--entryPoints.web.address: ${var.http_port}",
-        "--entryPoints.web.http.redirections.entryPoint.to: websecure",
-        "--entryPoints.websecure.address: ${var.https_port}",
+        "--providers.ecs.exposedByDefault=false",
+        "--entryPoints.web.address=:${var.http_port}",
+        "--entryPoints.web.http.redirections.entryPoint.to=websecure",
+        "--entryPoints.websecure.address=:${var.https_port}",
       ]
       essential = true
       logConfiguration = {
