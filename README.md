@@ -59,11 +59,16 @@ No modules.
 | <a name="vpc_id"></a> [vpc\_id](#input\_vpc_id) | The ID of the VPC to of the ECS cluster | `string` | `{}` | yes |
 | <a name="nlb_arn"></a> [nlb\_arn](#input\_nlb_arn) | The ARN of the NLB to deploy to | `string` | `{}` | yes |
 | <a name="default_acm_arn"></a> [default\_acm\_arn](#input\_default_acm_arn) | The ARN of the Default Certificate for SSL | `string` | `{}` | yes |
-| <a name="ecs_cluster_name"></a> [ecs\_cluster\_name"](#input\_ecs_cluster_name") | The Name of the ECS Cluster | `string` | `{}` | yes |
-| <a name="public_subnets_ipv4"></a> [public\_subnets\_ipv4"](#input\_public_subnets_ipv4") | VPC Subnets IPv4 - Public | `string` | `{}` | yes |
-| <a name="public_subnets_ipv6"></a> [public\_subnets\_ipv6"](#input\_public_subnets_ipv6") | VPC Subnets IPv6 - Public | `string` | `{}` | yes |
-| <a name="private_subnets_ipv4"></a> [private\_subnets\_ipv4"](#input\_private_subnets_ipv4") | VPC Subnets IPv4 - Private | `string` | `{}` | yes |
-| <a name="private_subnets_ipv6"></a> [private\_subnets\_ipv6"](#input\_private_subnets_ipv6") | VPC Subnets IPv6 - Private | `string` | `{}` | yes |
+| <a name="ecs_cluster_name"></a> [ecs\_cluster\_name](#input\_ecs_cluster_name) | The Name of the ECS Cluster | `string` | `{}` | yes |
+| <a name="public_subnets_ipv4"></a> [public\_subnets\_ipv4](#input\_public_subnets_ipv4) | VPC Subnets IPv4 - Public | `string` | `{}` | yes |
+| <a name="public_subnets_ipv6"></a> [public\_subnets\_ipv6](#input\_public_subnets_ipv6) | VPC Subnets IPv6 - Public | `string` | `{}` | yes |
+| <a name="private_subnets_ipv4"></a> [private\_subnets\_ipv4](#input\_private_subnets_ipv4) | VPC Subnets IPv4 - Private | `string` | `{}` | yes |
+| <a name="private_subnets_ipv6"></a> [private\_subnets\_ipv6](#input\_private_subnets_ipv6) | VPC Subnets IPv6 - Private | `string` | `{}` | yes |
+| <a name="http_port (Optional)"></a> [http\_port](#input\_http_port) | The Name HTTP Port of the Treafik Container | `string` | `80` | no |
+| <a name="https_port (Optional)"></a> [https\_port](#input\_https_port) | The Name HTTPS Port of the Treafik Container | `string` | `443` | no |
+| <a name="traefik_version (Optional)"></a> [traefik\_version](#input\_traefik_version) | Treafik Container Version| `string` | `latest` | no |
+| <a name="traefik_log_level (Optional)"></a> [traefik\_log\_level](#input\_traefik_log_level) | Treafik Log Level | `string` | `ERROR` | no |
+
 
 ## Outputs
 

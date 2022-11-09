@@ -189,7 +189,7 @@ resource "aws_lb_listener" "traefik_https" {
   load_balancer_arn = var.nlb_arn
   port              = "443"
   protocol          = "TLS"
-  certificate_arn   = var.default_acm
+  certificate_arn   = var.default_acm_arn
   default_action {
     target_group_arn = aws_lb_target_group.traefik_https.id
     type             = "forward"
