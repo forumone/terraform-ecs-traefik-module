@@ -77,9 +77,14 @@ resource "aws_iam_role_policy" "traefik_policy" {
   policy = data.aws_iam_policy_document.traefik_policy.json
 }
 
+resource "aws_iam_role" "ecs_role" {
+  name               = "ecs_role"
+  assume_role_policy = data.aws_iam_policy_document.ecs_assume.json
+}
+
 resource "aws_iam_role_policy_attachment" "ecs_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-  role       = aws_iam_role.traefik.name
+  role       = aws_iam_role.ecs_role.name
 }
 
 # Create Security groups
@@ -183,6 +188,7 @@ resource "aws_lb_listener" "traefik_https" {
 resource "aws_ecs_task_definition" "traefik" {
   family                   = "traefik"
   task_role_arn            = aws_iam_role.traefik.arn
+  execution_role_arn       = aws_iam_role.ecs_role.arn
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
