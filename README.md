@@ -64,10 +64,10 @@ No modules.
 | <a name="public_subnets_ipv6"></a> [public\_subnets\_ipv6](#input\_public_subnets_ipv6) | VPC Subnets IPv6 - Public | `string` | `{}` | yes |
 | <a name="private_subnets_ipv4"></a> [private\_subnets\_ipv4](#input\_private_subnets_ipv4) | VPC Subnets IPv4 - Private | `string` | `{}` | yes |
 | <a name="private_subnets_ipv6"></a> [private\_subnets\_ipv6](#input\_private_subnets_ipv6) | VPC Subnets IPv6 - Private | `string` | `{}` | yes |
-| <a name="http_port (Optional)"></a> [http\_port](#input\_http_port) | The Name HTTP Port of the Treafik Container | `string` | `80` | no |
-| <a name="https_port (Optional)"></a> [https\_port](#input\_https_port) | The Name HTTPS Port of the Treafik Container | `string` | `443` | no |
-| <a name="traefik_version (Optional)"></a> [traefik\_version](#input\_traefik_version) | Treafik Container Version| `string` | `latest` | no |
-| <a name="traefik_log_level (Optional)"></a> [traefik\_log\_level](#input\_traefik_log_level) | Treafik Log Level | `string` | `ERROR` | no |
+| <a name="http_port (Optional)"></a> [http\_port](#input\_http_port) | The Name HTTP Port of the Traefik Container | `string` | `80` | no |
+| <a name="https_port (Optional)"></a> [https\_port](#input\_https_port) | The Name HTTPS Port of the Traefik Container | `string` | `443` | no |
+| <a name="traefik_version (Optional)"></a> [traefik\_version](#input\_traefik_version) | Traefik Container Version| `string` | `latest` | no |
+| <a name="traefik_log_level (Optional)"></a> [traefik\_log\_level](#input\_traefik_log_level) | Traefik Log Level | `string` | `ERROR` | no |
 
 
 ## Outputs
