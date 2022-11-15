@@ -68,7 +68,7 @@ resource "aws_iam_role_policy" "traefik_policy" {
 }
 
 resource "aws_iam_role" "ecs_role" {
-  name               = "${var.ecs_cluster_name}_ecs_role"
+  name               = "${var.ecs_cluster_name}_traefik"
   assume_role_policy = data.aws_iam_policy_document.ecs_assume.json
 }
 
