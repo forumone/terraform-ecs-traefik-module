@@ -10,3 +10,5 @@ variable "public_subnets_ipv4" {}
 variable "public_subnets_ipv6" {}
 variable "private_subnets_ipv4" {}
 variable "private_subnets_ipv6" {}
+variable "autoscaling_min" { default = 2 }
+variable "autoscaling_max" { default = 4 }
