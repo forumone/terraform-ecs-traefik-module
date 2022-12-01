@@ -277,9 +277,9 @@ resource "aws_appautoscaling_target" "traefik" {
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 
-  # Permit 2-4 replicas
-  min_capacity = 2
-  max_capacity = 4
+  # Permit 2-4 replicas by default - overridable
+  min_capacity = var.autoscaling_min
+  max_capacity = var.autoscaling_max
 }
 
 # Define a CPU-based scaling policy.  Autoscaling will attempt to maintain around 30% CPU
