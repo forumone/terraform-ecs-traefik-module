@@ -249,7 +249,6 @@ resource "aws_ecs_service" "traefik" {
   name            = "${var.ecs_cluster_name}-traefik"
   cluster         = var.ecs_cluster_name
   task_definition = aws_ecs_task_definition.traefik.arn
-  desired_count   = 1
   launch_type     = "FARGATE"
 
 
@@ -269,4 +268,38 @@ resource "aws_ecs_service" "traefik" {
     subnets         = toset(data.aws_subnets.private.ids)
     security_groups = [aws_security_group.traefik_ecs.id]
   }
+}
+
+# Create an autoscaling target for the traefik service
+resource "aws_appautoscaling_target" "traefik" {
+  # Tell autoscaling which AWS service resource this target is for.
+  resource_id        = "service/${var.ecs_cluster_name}/${aws_ecs_service.traefik.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+
+  # Permit 2-4 replicas by default - overridable
+  min_capacity = var.autoscaling_min
+  max_capacity = var.autoscaling_max
+}
+
+# Define a CPU-based scaling policy.  Autoscaling will attempt to maintain around 30% CPU
+# utilization for the traefik service.
+resource "aws_appautoscaling_policy" "traefik" {
+  name        = "traefik-autoscaling-policy"
+  policy_type = "TargetTrackingScaling"
+
+  # Apply this policy to the traefik autoscaling target
+  resource_id        = aws_appautoscaling_target.traefik.id
+  scalable_dimension = aws_appautoscaling_target.traefik.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.traefik.service_namespace
+
+  # Define the desired metric and threshold
+  target_tracking_scaling_policy_configuration {
+    target_value = 30
+
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+  }
+
 }

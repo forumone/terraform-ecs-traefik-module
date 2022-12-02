@@ -8,4 +8,6 @@ module "traefik" {
   nlb_arn              = module.nlb.nlb_arn
   ecs_cluster_name     = module.ecs_cluster_name
   default_acm_arn      = module.acm.default.arn
+  autoscaling_min      = 1 # default = 2
+  autoscaling_max      = 2 # default = 4
 }

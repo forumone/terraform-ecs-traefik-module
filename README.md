@@ -21,6 +21,9 @@ module "traefik" {
   nlb_arn              = module.nlb.nlb_arn
   ecs_cluster_name     = module.ecs_cluster_name
   default_acm_arn      = module.acm.default.arn
+  autoscaling_min      = 1
+  autoscaling_max      = 2
+
 }
 ```
 
@@ -68,7 +71,8 @@ No modules.
 | <a name="https_port (Optional)"></a> [https\_port](#input\_https_port) | The Name HTTPS Port of the Traefik Container | `string` | `443` | no |
 | <a name="traefik_version (Optional)"></a> [traefik\_version](#input\_traefik_version) | Traefik Container Version| `string` | `latest` | no |
 | <a name="traefik_log_level (Optional)"></a> [traefik\_log\_level](#input\_traefik_log_level) | Traefik Log Level | `string` | `ERROR` | no |
-
+| <a name="autoscaling_min (Optional)"></a> [autoscaling\_min](#input\_autoscaling\_min) | Autoscaling min | `number` | `2` | no |
+| <a name="autoscaling_max (Optional)"></a> [autoscaling\_max](#input\_autoscaling\_max) | Autoscaling max | `number` | `4` | no |
 
 ## Outputs
 
